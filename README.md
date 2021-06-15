@@ -51,11 +51,30 @@ func main () {
 	fmt.Println(status)
 
 	// example Query function
-	data, err := conf.Query()
+	data, err := conf.Query(&gobadpackets.Request{Country: "RU", Tags: "Mirai"})
+	if err!= nil {
+		log.Fatal(err)
+	}
 	fmt.Println(data.Count)
 
-	for _, v:=range data.Results {
-		fmt.Println(v.PostData)
+	// print all tags description
+	for _, v := range data.Results {
+		for _, tv := range v.Tags {
+			fmt.Println(tv.Description)
+		}
 	}
+
+	// Format data from string to Time type
+	timeTest,err := time.Parse(time.RFC3339,"2018-12-31T09:04:22Z")
+	if err!= nil {
+		log.Fatal(err)
+	}
+
+	// Request data with time parameter
+	data, err = conf.Query(&gobadpackets.Request{LastSeenBefore: timeTest})
+	if err!= nil {
+		log.Fatal(err)
+	}
+	fmt.Println(data.Count)
 }
 ```
