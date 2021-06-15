@@ -76,5 +76,26 @@ func main () {
 		log.Fatal(err)
 	}
 	fmt.Println(data.Count)
+
+	// Format data from string to Time type
+	timeStart,err := time.Parse(time.RFC3339,"2021-05-19T07:50:00Z")
+	if err!= nil {
+		log.Fatal(err)
+	}
+	timeEnd,err := time.Parse(time.RFC3339,"2021-05-19T08:15:00Z")
+	if err!= nil {
+		log.Fatal(err)
+	}
+
+	// Request data between 2 datetime
+	data, err = conf.Query(&gobadpackets.Request{
+		FirstSeenAfter: timeStart.Add(-time.Minute * 15),
+		LastSeenBefore: timeEnd.Add(time.Minute * 15),
+		SourceIPAddress: "192.168.1.1",
+	})
+	if err!= nil {
+		log.Fatal(err)
+	}
+	fmt.Println(data.Count)
 }
 ```
