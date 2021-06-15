@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/go-querystring/query"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -32,6 +33,25 @@ type Data struct {
 		FirstSeen  time.Time `json:"first_seen"`
 		LastSeen   time.Time `json:"last_seen"`
 	} `json:"results"`
+}
+
+// Request struct for making search
+type Request struct {
+	SourceIPAddress string    `url:"source_ip_address,omitempty"`
+	TargetPort      uint16    `url:"target_port,omitempty"`
+	Protocol        string    `url:"protocol,omitempty"`
+	UserAgent       string    `url:"user_agent,omitempty"`
+	Payload         string    `url:"payload,omitempty"`
+	PostData        string    `url:"post_data,omitempty"`
+	Country         string    `url:"country,omitempty"`
+	FirstSeenBefore time.Time `url:"first_seen_before,omitempty"`
+	LastSeenBefore  time.Time `url:"last_seen_before,omitempty"`
+	FirstSeenAfter  time.Time `url:"first_seen_after,omitempty"`
+	LastSeenAfter   time.Time `url:"last_seen_after,omitempty"`
+	EventCount      uint64    `url:"event_count,omitempty"`
+	Limit           uint32    `url:"limit,omitempty"`
+	Page            uint32    `url:"page,omitempty"`
+	Tags            string    `url:"tags,omitempty"`
 }
 
 // Client main struct
@@ -65,7 +85,7 @@ func (c *Client) query(url string) ([]byte, int, error) {
 		return nil, 0, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", c.APIKey)
+	req.Header.Add("Authorization", fmt.Sprintf("Token %s", c.APIKey))
 	resp, err := c.conn.Do(req)
 	if err != nil {
 		return nil, 0, err
@@ -93,8 +113,12 @@ func (c *Client) Ping() bool {
 }
 
 // Query return data from request
-func (c *Client) Query() (*Data, error) {
-	url := fmt.Sprintf("%squery", c.URL)
+func (c *Client) Query(parameters *Request) (*Data, error) {
+	v, err := query.Values(parameters)
+	if err != nil {
+		return nil, err
+	}
+	url := fmt.Sprintf("%squery?%s", c.URL, v.Encode())
 	body, code, err := c.query(url)
 	if err != nil {
 		return &Data{}, nil

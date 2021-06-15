@@ -49,7 +49,7 @@ func TestQuery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := conf.Query()
+	data, err := conf.Query(&Request{Protocol: "tcp", TargetPort: 443})
 	if err != nil {
 		t.Fatal(err)
 	}
